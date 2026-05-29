@@ -1,0 +1,256 @@
+# qwer1234jdh.github.io
+
+<div style="padding: 1rem 0;">
+  <h2 class="sr-only">회전 행렬 R의 9개 숫자를 시각화한 인터랙티브 3D 도구</h2>
+
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+    <label style="font-size: 14px; color: var(--color-text-secondary); min-width: 80px;">X축 회전</label>
+    <input type="range" min="0" max="360" value="0" id="rx" style="flex: 1; min-width: 200px;" />
+    <span style="font-size: 14px; font-weight: 500; min-width: 40px; text-align: right;" id="rx-out">0°</span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+    <label style="font-size: 14px; color: var(--color-text-secondary); min-width: 80px;">Y축 회전</label>
+    <input type="range" min="0" max="360" value="0" id="ry" style="flex: 1; min-width: 200px;" />
+    <span style="font-size: 14px; font-weight: 500; min-width: 40px; text-align: right;" id="ry-out">0°</span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <label style="font-size: 14px; color: var(--color-text-secondary); min-width: 80px;">Z축 회전</label>
+    <input type="range" min="0" max="360" value="0" id="rz" style="flex: 1; min-width: 200px;" />
+    <span style="font-size: 14px; font-weight: 500; min-width: 40px; text-align: right;" id="rz-out">0°</span>
+  </div>
+
+  <div style="display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <button id="reset-btn">초기화</button>
+    <button id="preset-x">X축 90°</button>
+    <button id="preset-y">Y축 90°</button>
+    <button id="preset-z">Z축 90°</button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start;">
+    <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 12px; position: relative; aspect-ratio: 1;">
+      <div style="position: absolute; top: 8px; left: 12px; font-size: 12px; color: var(--color-text-secondary); z-index: 2;">3D 좌표축</div>
+      <canvas id="scene" style="width: 100%; height: 100%; display: block;"></canvas>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px;">
+        <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">회전 행렬 R (3×3 = 9개 숫자)</div>
+        <table id="matrix-table" style="width: 100%; font-family: var(--font-mono); font-size: 14px; border-collapse: collapse;">
+          <tr>
+            <td style="background: #FAECE7; color: #4A1B0C; padding: 8px; text-align: center; border-radius: 4px;" id="m00">1.00</td>
+            <td style="background: #FAECE7; color: #4A1B0C; padding: 8px; text-align: center; border-radius: 4px;" id="m01">0.00</td>
+            <td style="background: #FAECE7; color: #4A1B0C; padding: 8px; text-align: center; border-radius: 4px;" id="m02">0.00</td>
+          </tr>
+          <tr>
+            <td style="background: #E1F5EE; color: #04342C; padding: 8px; text-align: center; border-radius: 4px;" id="m10">0.00</td>
+            <td style="background: #E1F5EE; color: #04342C; padding: 8px; text-align: center; border-radius: 4px;" id="m11">1.00</td>
+            <td style="background: #E1F5EE; color: #04342C; padding: 8px; text-align: center; border-radius: 4px;" id="m12">0.00</td>
+          </tr>
+          <tr>
+            <td style="background: #E6F1FB; color: #042C53; padding: 8px; text-align: center; border-radius: 4px;" id="m20">0.00</td>
+            <td style="background: #E6F1FB; color: #042C53; padding: 8px; text-align: center; border-radius: 4px;" id="m21">0.00</td>
+            <td style="background: #E6F1FB; color: #042C53; padding: 8px; text-align: center; border-radius: 4px;" id="m22">1.00</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; font-size: 13px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span style="display: inline-block; width: 14px; height: 14px; background: #D85A30; border-radius: 3px;"></span>
+          <span style="color: var(--color-text-secondary);">1행 = <strong style="font-weight: 500;">새 X축</strong>의 방향</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span style="display: inline-block; width: 14px; height: 14px; background: #1D9E75; border-radius: 3px;"></span>
+          <span style="color: var(--color-text-secondary);">2행 = <strong style="font-weight: 500;">새 Y축</strong>의 방향</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 14px; height: 14px; background: #378ADD; border-radius: 3px;"></span>
+          <span style="color: var(--color-text-secondary);">3행 = <strong style="font-weight: 500;">새 Z축</strong>의 방향</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const rxEl = document.getElementById('rx');
+  const ryEl = document.getElementById('ry');
+  const rzEl = document.getElementById('rz');
+  const rxOut = document.getElementById('rx-out');
+  const ryOut = document.getElementById('ry-out');
+  const rzOut = document.getElementById('rz-out');
+
+  // matrix multiplication: 3x3 * 3x3
+  function mmul(A, B) {
+    const C = [[0,0,0],[0,0,0],[0,0,0]];
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        for (let k = 0; k < 3; k++) {
+          C[i][j] += A[i][k] * B[k][j];
+        }
+      }
+    }
+    return C;
+  }
+
+  function rotX(a) {
+    const c = Math.cos(a), s = Math.sin(a);
+    return [[1,0,0],[0,c,-s],[0,s,c]];
+  }
+  function rotY(a) {
+    const c = Math.cos(a), s = Math.sin(a);
+    return [[c,0,s],[0,1,0],[-s,0,c]];
+  }
+  function rotZ(a) {
+    const c = Math.cos(a), s = Math.sin(a);
+    return [[c,-s,0],[s,c,0],[0,0,1]];
+  }
+
+  // project 3D to 2D (simple isometric-ish)
+  function project(p, w, h) {
+    // viewing angle
+    const azim = Math.PI / 6; // 30 deg
+    const elev = Math.PI / 7;
+    const cosA = Math.cos(azim), sinA = Math.sin(azim);
+    const cosE = Math.cos(elev), sinE = Math.sin(elev);
+    // rotate around Z by azim, then tilt
+    const x1 = p[0] * cosA - p[1] * sinA;
+    const y1 = p[0] * sinA + p[1] * cosA;
+    const z1 = p[2];
+    const x2 = x1;
+    const y2 = y1 * cosE - z1 * sinE;
+    // screen
+    const scale = Math.min(w, h) * 0.32;
+    return [w / 2 + x2 * scale, h / 2 - y2 * scale];
+  }
+
+  function drawArrow(from3, to3, color, label, w, h, dashed) {
+    const a = project(from3, w, h);
+    const b = project(to3, w, h);
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = dashed ? 1.5 : 2.5;
+    if (dashed) ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(b[0], b[1]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // arrowhead
+    if (!dashed) {
+      const dx = b[0] - a[0], dy = b[1] - a[1];
+      const len = Math.hypot(dx, dy);
+      if (len > 1) {
+        const ux = dx / len, uy = dy / len;
+        const size = 8;
+        ctx.beginPath();
+        ctx.moveTo(b[0], b[1]);
+        ctx.lineTo(b[0] - ux * size - uy * size * 0.5, b[1] - uy * size + ux * size * 0.5);
+        ctx.lineTo(b[0] - ux * size + uy * size * 0.5, b[1] - uy * size - ux * size * 0.5);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    if (label) {
+      ctx.font = '500 13px sans-serif';
+      ctx.fillStyle = color;
+      ctx.fillText(label, b[0] + 6, b[1] - 4);
+    }
+    ctx.restore();
+  }
+
+  function draw() {
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    const ax = parseFloat(rxEl.value) * Math.PI / 180;
+    const ay = parseFloat(ryEl.value) * Math.PI / 180;
+    const az = parseFloat(rzEl.value) * Math.PI / 180;
+
+    // R = Rz * Ry * Rx
+    const R = mmul(mmul(rotZ(az), rotY(ay)), rotX(ax));
+
+    // ORIGINAL axes (dashed, faded)
+    drawArrow([0,0,0], [1,0,0], 'rgba(216, 90, 48, 0.35)', null, w, h, true);
+    drawArrow([0,0,0], [0,1,0], 'rgba(29, 158, 117, 0.35)', null, w, h, true);
+    drawArrow([0,0,0], [0,0,1], 'rgba(55, 138, 221, 0.35)', null, w, h, true);
+
+    // NEW axes — columns of R are where original basis vectors go
+    // new X axis: R * [1,0,0]^T = (R[0][0], R[1][0], R[2][0])
+    const newX = [R[0][0], R[1][0], R[2][0]];
+    const newY = [R[0][1], R[1][1], R[2][1]];
+    const newZ = [R[0][2], R[1][2], R[2][2]];
+
+    drawArrow([0,0,0], newX, '#D85A30', "X'", w, h, false);
+    drawArrow([0,0,0], newY, '#1D9E75', "Y'", w, h, false);
+    drawArrow([0,0,0], newZ, '#378ADD', "Z'", w, h, false);
+
+    // origin dot
+    const o = project([0,0,0], w, h);
+    ctx.fillStyle = 'var(--color-text-secondary)';
+    ctx.beginPath();
+    ctx.arc(o[0], o[1], 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // update matrix display
+    // Display rows of R as "where new X / Y / Z axes point" 
+    // Row i of R = i-th coordinate of each new basis vector
+    // But for intuition: column j of R = new j-th axis in original coords
+    // To make it match the legend "row 1 = new X direction", we show R^T
+    // i.e., m[row][col] where row = which new axis (X/Y/Z), col = original axis component
+    const display = [
+      [R[0][0], R[1][0], R[2][0]], // new X axis
+      [R[0][1], R[1][1], R[2][1]], // new Y axis
+      [R[0][2], R[1][2], R[2][2]]  // new Z axis
+    ];
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const el = document.getElementById('m' + i + j);
+        const v = display[i][j];
+        const rounded = Math.abs(v) < 0.005 ? 0 : v;
+        el.textContent = rounded.toFixed(2);
+      }
+    }
+
+    rxOut.textContent = rxEl.value + '°';
+    ryOut.textContent = ryEl.value + '°';
+    rzOut.textContent = rzEl.value + '°';
+  }
+
+  [rxEl, ryEl, rzEl].forEach(el => el.addEventListener('input', draw));
+
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    rxEl.value = 0; ryEl.value = 0; rzEl.value = 0; draw();
+  });
+  document.getElementById('preset-x').addEventListener('click', () => {
+    rxEl.value = 90; ryEl.value = 0; rzEl.value = 0; draw();
+  });
+  document.getElementById('preset-y').addEventListener('click', () => {
+    rxEl.value = 0; ryEl.value = 90; rzEl.value = 0; draw();
+  });
+  document.getElementById('preset-z').addEventListener('click', () => {
+    rxEl.value = 0; ryEl.value = 0; rzEl.value = 90; draw();
+  });
+
+  // wait a tick for layout, then draw
+  setTimeout(() => { resize(); draw(); }, 50);
+})();
+</script>
